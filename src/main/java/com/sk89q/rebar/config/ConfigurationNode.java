@@ -12,6 +12,8 @@ import java.util.Map;
 public class ConfigurationNode extends ConfigurationObject implements Cloneable {
 
     public static final String ROOT = "";
+    
+    private ConfigurationNode parent;
 
     /**
      * Construct the node from the given map.
@@ -34,10 +36,89 @@ public class ConfigurationNode extends ConfigurationObject implements Cloneable 
     }
 
     /**
+     * Get the parent configuration node. A parent node is used when accessing an element
+     * that is not found in this node. The same also applies when trying to set a value
+     * to this node. If there is a parent, and this node does not contain the location,
+     * then the parent will be written to.
+     * </p>
+     * Parent nodes are not used when loading or saving configurations
+     * (see {@link YamlConfigurationFile}).
+     * 
+     * @return parent node or null
+     */
+    public ConfigurationNode getParent() {
+        return parent;
+    }
+
+    /**
+     * Set the parent node.
+     * 
+     * @see #getParent()
+     * @param parent node or null
+     */
+    public void setParent(ConfigurationNode parent) {
+        this.parent = parent;
+    }
+
+    /**
      * Clear all nodes.
      */
     public void clear() {
         getUnderlyingMap().clear();
+    }
+
+    @Override
+    protected Object get(String[] parts) {
+        // If this node has a parent, redirect to the parent if this node doesn't
+        // contain the given path
+        if (getParent() != null) {
+            if (!super.contains(parts)) {
+                return getParent().get(parts);
+            }
+        }
+        
+        return super.get(parts);
+    }
+
+    @Override
+    protected void set(String[] parts, Object value) {
+        // If this node has a parent, redirect to the parent if this node doesn't
+        // contain the given path
+        if (getParent() != null) {
+            if (!super.contains(parts)) {
+                getParent().set(parts, value);
+                return;
+            }
+        }
+        
+        super.set(parts, value);
+    }
+
+    @Override
+    public void remove(String[] parts) {
+        // If this node has a parent, redirect to the parent if this node doesn't
+        // contain the given path
+        if (getParent() != null) {
+            if (!super.contains(parts)) {
+                getParent().remove(parts);
+                return;
+            }
+        }
+        
+        super.remove(parts);
+    }
+
+    @Override
+    public boolean contains(String[] parts) {
+        // If this node has a parent, redirect to the parent if this node doesn't
+        // contain the given path
+        if (getParent() != null) {
+            if (!super.contains(parts)) {
+                return getParent().contains(parts);
+            }
+        }
+        
+        return super.contains(parts);
     }
 
     /**

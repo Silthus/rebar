@@ -49,9 +49,8 @@ import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.Vector2D;
 
 /**
- * Represents a configuration object.
- *
- * @author sk89q
+ * Represents a configuration object. A parent can be assigned to this object,
+ * which be read from if this object does not contain 
  */
 class ConfigurationObject {
 
@@ -67,7 +66,7 @@ class ConfigurationObject {
     protected static final ListLoaderBuilder listLB = new ListLoaderBuilder();
     protected static final MapLoaderBuilder mapLB = new MapLoaderBuilder();
 
-    protected Object root;
+    private Object root;
 
     /**
      * Construct the object with the given underlying object.
@@ -76,6 +75,24 @@ class ConfigurationObject {
      */
     public ConfigurationObject(Object object) {
         this.root = object;
+    }
+    
+    /**
+     * Get the root object of this object.
+     * 
+     * @return the root object
+     */
+    protected final Object getRoot() {
+        return root;
+    }
+    
+    /**
+     * Set the root object of this object.
+     * 
+     * @param root the root object
+     */
+    protected final void setRoot(Object root) {
+        this.root = root;
     }
 
     /**
@@ -87,7 +104,7 @@ class ConfigurationObject {
      * @return object, or the path does not exist, null
      */
     @Deprecated
-    public Object getProperty(String path) {
+    public final Object getProperty(String path) {
         return get(parsePath(path));
     }
 
@@ -99,7 +116,7 @@ class ConfigurationObject {
      * @param path path to node (dot notation)
      * @return object, or the path does not exist, null
      */
-    public Object get(String path) {
+    public final Object get(String path) {
         return get(parsePath(path));
     }
 
@@ -1157,7 +1174,7 @@ class ConfigurationObject {
      * @param path path
      * @return true if it exists
      */
-    public boolean contains(String path) {
+    public final boolean contains(String path) {
         return contains(parsePath(path));
     }
 

@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sk89q.rebar.config.Configuration;
+import com.sk89q.rebar.config.YamlConfigurationFile;
 import com.sk89q.rebar.config.PairedKeyValueLoaderBuilder;
 import com.sk89q.rebar.config.types.LowercaseStringLoaderBuilder;
 import com.sk89q.rebar.config.types.MaterialPatternLoaderBuilder;
@@ -43,7 +43,7 @@ public class MaterialDatabase {
             return;
         }
 
-        Configuration config = new Configuration(file);
+        YamlConfigurationFile config = new YamlConfigurationFile(file);
         config.load();
 
         PairedKeyValueLoaderBuilder<String, MaterialPattern> loader =
