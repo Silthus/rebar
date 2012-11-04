@@ -1,5 +1,6 @@
 package com.sk89q.rebar.config;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,11 +17,11 @@ public class YamlConfigurationResource extends YamlConfiguration {
     /**
      * Construct a loader that uses the given class and path to load the file.
      * 
-     * @param clazz
-     * @param path
+     * @param clazz the class to load from
+     * @param path the path of the file
      */
-    protected YamlConfigurationResource(Class<?> clazz, String path) {
-        super(new HashMap<Object, Object>());
+    public YamlConfigurationResource(Class<?> clazz, String path) {
+        super(new HashMap<Object, Object>(), new YamlStyle());
         
         this.clazz = clazz;
         this.path = path;
@@ -28,7 +29,12 @@ public class YamlConfigurationResource extends YamlConfiguration {
 
     @Override
     protected InputStream getInputStream() throws IOException {
-        return clazz.getResourceAsStream(path);
+        InputStream stream = clazz.getResourceAsStream(path);
+        if (stream == null) {
+            throw new FileNotFoundException(
+                    "Could not find '" + path + "' inside class " + clazz.getCanonicalName());
+        }
+        return stream;
     }
 
     @Override

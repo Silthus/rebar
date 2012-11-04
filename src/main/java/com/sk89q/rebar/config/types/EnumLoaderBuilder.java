@@ -1,13 +1,11 @@
 package com.sk89q.rebar.config.types;
 
-import java.util.logging.Logger;
-
 import com.sk89q.rebar.config.Builder;
 import com.sk89q.rebar.config.Loader;
+import com.sk89q.rebar.config.LoaderBuilderException;
 
 public class EnumLoaderBuilder<T extends Enum<T>> implements Loader<T>, Builder<T> {
 
-    private final Logger logger = Logger.getLogger(EnumLoaderBuilder.class.getCanonicalName());
     private final Class<T> enumType;
 
     public EnumLoaderBuilder(Class<T> enumType) {
@@ -38,11 +36,9 @@ public class EnumLoaderBuilder<T extends Enum<T>> implements Loader<T>, Builder<
             }
             return Enum.valueOf(enumType, stringValue.toUpperCase());
         } catch (IllegalArgumentException e) {
-            logger.warning("EnumLoaderBuilder: Could not find '" + stringValue + "' in " +
+            throw new LoaderBuilderException("EnumLoaderBuilder: Could not find '" + stringValue + "' in " +
                     enumType.getCanonicalName());
         }
-
-        return null;
     }
 
     @Override

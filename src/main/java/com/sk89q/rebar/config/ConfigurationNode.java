@@ -122,6 +122,15 @@ public class ConfigurationNode extends ConfigurationObject implements Cloneable 
     }
 
     /**
+     * Get the number of elements in this node.
+     *
+     * @return size
+     */
+    public int size() {
+        return getUnderlyingMap().size();
+    }
+
+    /**
      * Shallow copy the node.
      */
     @Override

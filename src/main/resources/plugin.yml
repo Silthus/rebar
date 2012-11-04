@@ -1,0 +1,4 @@
+name: Rebar
+main: com.sk89q.rebar.bukkit.RebarPlugin
+version: "${project.version}"
+softdepend: [WorldEdit]

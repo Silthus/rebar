@@ -2,8 +2,6 @@ package com.sk89q.rebar.util;
 
 import java.util.Arrays;
 
-import org.bukkit.inventory.ItemStack;
-
 public class MaterialPattern {
     
     private final int material;
@@ -44,16 +42,16 @@ public class MaterialPattern {
         return false;
     }
     
-    public boolean matches(ItemStack item) {
-        return matches(item.getTypeId(), item.getDurability());
-    }
-    
     public boolean hasDataFilter() {
         return data != null;
     }
     
     public int getMaterial() {
         return material;
+    }
+    
+    public int getDefaultData() {
+        return data == null || data.length == 0 ? 0 : (data[0] == -1 ? data[1] : data[0]);
     }
     
     public int[] getDataRange() {

@@ -28,9 +28,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.DumperOptions.FlowStyle;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import com.sk89q.rebar.config.types.BlockVector2dLoaderBuilder;
 import com.sk89q.rebar.config.types.BooleanLoaderBuilder;
@@ -53,6 +60,8 @@ import com.sk89q.worldedit.Vector2D;
  * which be read from if this object does not contain 
  */
 class ConfigurationObject {
+    
+    private final Pattern indexPattern = Pattern.compile("^.*\\[([0-9]+)\\]$");
 
     protected static final String ROOT = "";
 
@@ -133,26 +142,64 @@ class ConfigurationObject {
         if (parts.length == 0) {
             return root;
         }
+        
+        if (!(root instanceof Map<?, ?>)) {
+            return null;
+        }
 
         Map<Object, Object> node = (Map<Object, Object>) root;
 
         for (int i = 0; i < parts.length; i++) {
-            Object o = node.get(parts[i]);
+            String part = parts[i];
+            
+            // Indexes
+            Matcher m = indexPattern.matcher(part);
+            int index = -1;
+            if (m.matches()) {
+                part = part.substring(0, part.length() - m.group(1).length());
+                index = Integer.parseInt(m.group(1));
+            }
+            
+            Object o = node.get(part);
 
             if (o == null) {
                 return null;
             } else if (i == parts.length - 1) {
-                return o;
+                return getIndexOf(o, index);
             }
 
             try {
-                node = (Map<Object, Object>) o;
+                node = (Map<Object, Object>) getIndexOf(o, index);
             } catch (ClassCastException e) {
                 return null;
             }
         }
 
         return null;
+    }
+    
+    /**
+     * Helper method to get the index of an object, if the object is a list.
+     * 
+     * @param o object to index
+     * @param index index
+     * @return the item or null
+     */
+    private Object getIndexOf(Object o, int index) {
+        if (index == -1) {
+            return o;
+        }
+        
+        if (o instanceof List<?>) {
+            List<?> list = (List<?>) o;
+            if (index < list.size()) {
+                return list.get(index);
+            } else {
+                return 0;
+            }
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -234,11 +281,31 @@ class ConfigurationObject {
         if (parts.length == 0) {
             throw new IllegalArgumentException("Invalid path");
         }
+        
+        if (!(root instanceof Map<?, ?>)) {
+            return;
+        }
 
         Map<Object, Object> node = (Map<Object, Object>) root;
 
         for (int i = 0; i < parts.length; i++) {
-            Object o = node.get(parts[i]);
+            String part = parts[i];
+            
+            // Indexes
+            Matcher m = indexPattern.matcher(part);
+            int index = -1;
+            if (m.matches()) {
+                part = part.substring(0, part.length() - m.group(1).length() - 2);
+                index = Integer.parseInt(m.group(1));
+            }
+            
+            // Legal if there is an index
+            Object o;
+            if (part.equals("")) {
+                o = node;
+            } else {
+                o = node.get(part);
+            }
 
             // Found our target!
             if (i == parts.length - 1) {
@@ -246,12 +313,14 @@ class ConfigurationObject {
                 return;
             }
 
+            o = getIndexOf(o, index);
+
             if (o == null || !(o instanceof Map)) {
                 // This will override existing configuration data!
                 o = new HashMap<String, Object>();
                 node.put(parts[i], o);
             }
-
+            
             node = (Map<Object, Object>) o;
         }
     }
@@ -586,7 +655,7 @@ class ConfigurationObject {
      */
     private <V, K extends Collection<V>> K nullableCollectionOf(String path,
             Loader<V> loader, K collection) {
-        List<Object> objectList = getList(path);
+        List<Object> objectList = getOf(path, listLB);
 
         // We don't have a list at that path
         if (objectList == null) {
@@ -1103,6 +1172,10 @@ class ConfigurationObject {
         if (parts.length == 0) {
             throw new IllegalArgumentException("Invalid path");
         }
+        
+        if (!(root instanceof Map<?, ?>)) {
+            return;
+        }
 
         Map<Object, Object> node = (Map<Object, Object>) root;
 
@@ -1151,21 +1224,40 @@ class ConfigurationObject {
         if (parts.length == 0) {
             return true;
         }
+        
+        if (!(root instanceof Map<?, ?>)) {
+            return false;
+        }
 
         Map<Object, Object> node = (Map<Object, Object>) root;
 
         for (int i = 0; i < parts.length; i++) {
-            Object o = node.get(parts[i]);
+            String part = parts[i];
+            
+            // Indexes
+            Matcher m = indexPattern.matcher(part);
+            int index = -1;
+            if (m.matches()) {
+                part = part.substring(0, part.length() - m.group(1).length());
+                index = Integer.parseInt(m.group(1));
+            }
+            
+            Object o = node.get(part);
+            
+            if (o == null) {
+                return false;
+            }
 
             // Found our target!
             if (i == parts.length - 1) {
-                return node.containsKey(parts[i]);
+                return node.containsKey(parts[i]) && getIndexOf(o, index) != null;
+                // This is not quite the right way to process indexes
             }
 
-            node = (Map<Object, Object>) o;
+            node = (Map<Object, Object>) getIndexOf(o, index);
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -1176,6 +1268,18 @@ class ConfigurationObject {
      */
     public final boolean contains(String path) {
         return contains(parsePath(path));
+    }
+    
+    @Override
+    public String toString() {
+        DumperOptions options = new DumperOptions();
+        options.setIndent(4);
+        options.setDefaultFlowStyle(FlowStyle.AUTO);
+        Representer representer = new Representer();
+        representer.setDefaultFlowStyle(FlowStyle.AUTO);
+        
+        Yaml yaml = new Yaml(new SafeConstructor(), new Representer(), options);
+        return yaml.dump(root).trim();
     }
 
     protected static String[] parsePath(String path) {

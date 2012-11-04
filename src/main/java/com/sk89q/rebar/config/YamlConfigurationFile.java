@@ -23,6 +23,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,22 +37,63 @@ import java.util.HashMap;
 public class YamlConfigurationFile extends YamlConfiguration {
     
     private File file;
+    private boolean ignoreNotFound = true;
+
+    /**
+     * Create a new YAML configuration from a file. Be aware that {@link #load()} still
+     * has to be called at least once before anything is loaded from the file. By
+     * default, this constructor will enable the "ignore missing files" option when
+     * loading.
+     * 
+     * @param file the file
+     */
+    public YamlConfigurationFile(File file) {
+        super(new HashMap<Object, Object>(), new YamlStyle());
+        
+        this.file = file;
+        this.ignoreNotFound = true;
+    }
 
     /**
      * Create a new YAML configuration from a file. Be aware that {@link #load()} still
      * has to be called at least once before anything is loaded from the file.
      * 
      * @param file the file
+     * @param style style of the YAML data
      */
-    public YamlConfigurationFile(File file) {
-        super(new HashMap<Object, Object>());
+    public YamlConfigurationFile(File file, YamlStyle style) {
+        super(new HashMap<Object, Object>(), style);
         
         this.file = file;
+        this.ignoreNotFound = true;
+    }
+
+    /**
+     * Create a new YAML configuration from a file. Be aware that {@link #load()} still
+     * has to be called at least once before anything is loaded from the file.
+     * 
+     * @param file the file
+     * @param style style of the YAML data
+     * @param ignoreNotFound true to have {@link FileNotFoundException} errors ignored
+     */
+    public YamlConfigurationFile(File file, YamlStyle style, boolean ignoreNotFound) {
+        super(new HashMap<Object, Object>(), style);
+        
+        this.file = file;
+        this.ignoreNotFound = ignoreNotFound;
     }
 
     @Override
     protected InputStream getInputStream() throws IOException {
-        return new BufferedInputStream(new FileInputStream(file));
+        try {
+            return new BufferedInputStream(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            if (ignoreNotFound) {
+                return null;
+            }
+            
+            throw e;
+        }
     }
 
     @Override

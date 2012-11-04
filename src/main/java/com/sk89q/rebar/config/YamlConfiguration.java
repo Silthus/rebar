@@ -11,6 +11,7 @@ import java.util.Map;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.reader.UnicodeReader;
 import org.yaml.snakeyaml.representer.Representer;
 
@@ -26,13 +27,16 @@ public abstract class YamlConfiguration extends ConfigurationNode {
      * Construct the configuration with the given map.
      * 
      * @param root root
+     * @param style style
      */
-    protected YamlConfiguration(Map<Object, Object> root) {
+    protected YamlConfiguration(Map<Object, Object> root, YamlStyle style) {
         super(root);
 
         DumperOptions options = new DumperOptions();
-        options.setIndent(4);
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.AUTO);
+        options.setIndent(style.getIndent());
+        options.setDefaultFlowStyle(style.getStyle());
+        Representer representer = new Representer();
+        representer.setDefaultFlowStyle(style.getStyle());
 
         yaml = new Yaml(new SafeConstructor(), new Representer(), options);
     }
@@ -90,15 +94,19 @@ public abstract class YamlConfiguration extends ConfigurationNode {
      * Loads the configuration file.
      *
      * @throws IOException on I/O error
+     * @throws ConfigurationException on configuration error
      */
-    public void load() throws IOException {
+    public void load() throws IOException, ConfigurationException {
         InputStream stream = null;
         
         try {
             stream = getInputStream();
+            if (stream == null) {
+                return;
+            }
             read(getYaml().load(new UnicodeReader(stream)));
-        } catch (ConfigurationException e) {
-            setRoot(new HashMap<Object, Object>());
+        } catch (YAMLException e) {
+            throw new ConfigurationException(e);
         } finally {
             try {
                 if (stream != null) {
@@ -112,8 +120,10 @@ public abstract class YamlConfiguration extends ConfigurationNode {
     /**
      * Called by {@link #load()} in order to load the YAML data. If this method is
      * not supported, throw an {@link UnsupportedOperationException}.
+     * </p>
+     * This method can return null to have nothing be loaded and no error be emitted.
      * 
-     * @return input stream
+     * @return input stream, or null
      */
     protected abstract InputStream getInputStream() throws IOException;
 
@@ -134,7 +144,13 @@ public abstract class YamlConfiguration extends ConfigurationNode {
                 writer.append("\r\n");
             }
             
-            yaml.dump(getRoot(), writer);
+            Object root = getRoot();
+            
+            if (root instanceof Map<?, ?> && ((Map<?, ?>) root).size() == 0) {
+                writer.flush();
+            } else {
+                yaml.dump(getRoot(), writer);
+            }
         } catch (UnsupportedEncodingException e) {
             throw new IOException("Unsupported encoding", e);
         } finally {
@@ -162,16 +178,11 @@ public abstract class YamlConfiguration extends ConfigurationNode {
      * @param input input object
      * @throws ConfigurationException thrown if not a map
      */
-    @SuppressWarnings("unchecked")
     private void read(Object input) throws ConfigurationException {
-        try {
-            if (input == null) {
-                setRoot(new HashMap<Object, Object>());
-            } else {
-                setRoot((Map<Object, Object>) input);
-            }
-        } catch (ClassCastException e) {
-            throw new ConfigurationException("Root document must be an key-value structure");
+        if (input == null) {
+            setRoot(new HashMap<Object, Object>());
+        } else {
+            setRoot(input);
         }
     }
 
