@@ -79,6 +79,7 @@
          <version>1.0-beta-6</version>
       </extension>
     </extensions>
+    
     <resources>
       <resource>
         <targetPath>.</targetPath>
@@ -88,7 +89,16 @@
           <include>plugin.yml</include>
         </includes>
       </resource>
+      <resource>
+        <targetPath>defaults/</targetPath>
+        <filtering>true</filtering>
+        <directory>${basedir}/src/main/resources/</directory>
+        <includes>
+          <include>materials.yml</include>
+        </includes>
+      </resource>
     </resources>
+    
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

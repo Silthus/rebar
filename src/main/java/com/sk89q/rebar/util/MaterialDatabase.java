@@ -15,6 +15,9 @@ import com.sk89q.rebar.config.types.LowercaseStringLoaderBuilder;
 import com.sk89q.rebar.config.types.MaterialPatternLoaderBuilder;
 import com.sk89q.worldedit.blocks.ItemType;
 
+/**
+ * A database of materials.
+ */
 public class MaterialDatabase {
 
     private static MaterialDatabase instance;
@@ -42,8 +45,15 @@ public class MaterialDatabase {
         }
     }
 
+    /**
+     * Loads the material database.
+     * 
+     * @throws IOException I/O exception
+     * @throws ConfigurationException configuration exception
+     */
     public void loadMaterials() throws IOException, ConfigurationException {
         if (!file.exists()) {
+            DefaultsUtils.createDefaultConfiguration(getClass(), file, "/defaults/materials.yml");
             return;
         }
 
@@ -57,6 +67,12 @@ public class MaterialDatabase {
         patterns = config.mapOf("materials", loader);
     }
 
+    /**
+     * Get a mattern given a name.
+     * 
+     * @param name name of material
+     * @return pattern
+     */
     public MaterialPattern getPattern(String name) {
         MaterialPattern pattern = patterns.get(name.toLowerCase());
         if (pattern != null) {
@@ -72,6 +88,9 @@ public class MaterialDatabase {
         return null;
     }
 
+    /**
+     * Reload the materials database.
+     */
     public static void reload() {
         try {
             getInstance().loadMaterials();

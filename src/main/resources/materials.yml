@@ -1,0 +1,18 @@
+# REBAR MATERIALS FILE
+#
+# This can be used to define the names of materials, which will be used by everything
+# thta uses Rebar's materials database. There are different ways to define a material:
+# - As a block ID, and every data value: 35
+# - As a block ID with a specific data value: {35:[6]}
+# - As a block ID with a data value range: {35:[4-6]} -or- {35:[4..6]}
+#
+# Here's an example
+# materials:
+#    wool: 35
+#    wool_green: {35:[5]}
+#    wool_funky: {35:[5..8]}
+
+materials:
+    example_wool: 35
+    example_wool_green: {35:[5]}
+    example_wool_funky: {35:[5..8]}

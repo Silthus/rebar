@@ -25,6 +25,15 @@ public class RebarInstance {
     }
     
     /**
+     * Get whether an instance is available.
+     * 
+     * @return true if there's an instance
+     */
+    public static boolean hasInstance() {
+        return rebar != null;
+    }
+    
+    /**
      * Set the instance of the framework. This should only be called by Rebar itself.
      * 
      * @param rebar the framework

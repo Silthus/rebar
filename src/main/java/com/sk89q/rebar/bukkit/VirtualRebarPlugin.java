@@ -16,6 +16,7 @@ public class VirtualRebarPlugin implements Rebar {
     
     private VirtualRebarPlugin(Plugin plugin) {
         dataDir = new File(plugin.getDataFolder().getParentFile(), "Rebar");
+        dataDir.mkdirs();
         
         RebarInstance.setInstance(this);
     }
@@ -31,7 +32,7 @@ public class VirtualRebarPlugin implements Rebar {
      * @param plugin another plugin to start with
      */
     public static void setup(Plugin plugin) {
-        if (RebarInstance.getInstance() == null) {
+        if (!RebarInstance.hasInstance()) {
             new VirtualRebarPlugin(plugin);
         }
     }
