@@ -717,8 +717,9 @@ class ConfigurationObject {
             // put back into the configuration
             List<Object> objectList = new ArrayList<Object>();
             while (def.hasNext()) {
-                collection.add(def.next());
-                objectList.add(agent.write(def.next()));
+                V obj = def.next();
+                collection.add(obj);
+                objectList.add(agent.write(obj));
             }
             set(path, objectList);
         }
