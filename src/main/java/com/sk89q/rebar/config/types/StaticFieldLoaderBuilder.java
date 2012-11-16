@@ -10,10 +10,10 @@ import com.sk89q.rebar.config.LoaderBuilderException;
 
 public class StaticFieldLoaderBuilder<T> implements Loader<T> {
 
-    private final Class<T> type;
+    private final Class<?> type;
     private final Map<String, Field> fields = new HashMap<String, Field>();
 
-    public StaticFieldLoaderBuilder(Class<T> type, Class<T> fieldType) {
+    public StaticFieldLoaderBuilder(Class<?> type, Class<T> fieldType) {
         this.type = type;
 
         for (Field field : type.getFields()) {
@@ -24,8 +24,9 @@ public class StaticFieldLoaderBuilder<T> implements Loader<T> {
         }
     }
 
-    public StaticFieldLoaderBuilder(Class<T> type) {
-        this(type, type);
+    @SuppressWarnings("unchecked")
+    public StaticFieldLoaderBuilder(Class<?> type) {
+        this(type, (Class<T>) type);
     }
 
     @Override
