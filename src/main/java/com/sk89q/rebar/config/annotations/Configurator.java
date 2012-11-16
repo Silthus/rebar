@@ -290,7 +290,7 @@ public class Configurator {
     @SuppressWarnings("unchecked")
     private static <V> void set(ConfigurationNode node, String path,
             Object builder, Object value) {
-        node.set(path, (Builder<V>) builder, (V) value);
+        node.set(path, (V) value, (Builder<V>) builder);
     }
 
 }
