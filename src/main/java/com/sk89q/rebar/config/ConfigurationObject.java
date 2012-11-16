@@ -331,12 +331,13 @@ class ConfigurationObject {
      * delimited by periods (.).
      *
      * @param path path to node (dot notation)
-     * @param builder builder to marshal the value
      * @param value the value to set
+     * @param builder builder to marshal the value
      *
      */
-    public <V> void set(String path, Builder<V> builder, V value) {
-        Object o = builder.write(value);
+    @SuppressWarnings("unchecked")
+    public <V> void set(String path, Object value, Builder<V> builder) {
+        Object o = builder.write((V) value);
         set(path, o);
     }
 
