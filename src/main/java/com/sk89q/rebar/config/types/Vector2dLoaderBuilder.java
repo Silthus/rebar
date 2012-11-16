@@ -4,9 +4,20 @@ import com.sk89q.rebar.config.Builder;
 import com.sk89q.rebar.config.ConfigurationNode;
 import com.sk89q.rebar.config.Loader;
 import com.sk89q.rebar.util.MapBuilder.ObjectMapBuilder;
+import com.sk89q.worldedit.BlockVector2D;
 import com.sk89q.worldedit.Vector2D;
 
 public class Vector2dLoaderBuilder implements Loader<Vector2D>, Builder<Vector2D> {
+    
+    private final boolean asBlock;
+    
+    public Vector2dLoaderBuilder() {
+        this(false);
+    }
+    
+    public Vector2dLoaderBuilder(boolean asBlock) {
+        this.asBlock = asBlock;
+    }
 
     @Override
     public Object write(Vector2D value) {
@@ -26,7 +37,7 @@ public class Vector2dLoaderBuilder implements Loader<Vector2D>, Builder<Vector2D
             return null;
         }
 
-        return new Vector2D(x, z);
+        return asBlock ? new BlockVector2D(x, z) : new Vector2D(x, z);
     }
 
 }
