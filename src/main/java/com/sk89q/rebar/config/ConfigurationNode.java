@@ -16,6 +16,13 @@ public class ConfigurationNode extends ConfigurationObject implements Cloneable 
     private ConfigurationNode parent;
 
     /**
+     * Construct the node.
+     */
+    public ConfigurationNode() {
+        super(new HashMap<Object, Object>());
+    }
+
+    /**
      * Construct the node from the given map.
      *
      * @param root root node
